@@ -4,8 +4,7 @@ book_pdf_store/
 │   └── pdf/            # PDF files saved here
 │   └── images/         # Book images saved here
 │
-├── main.py             # Main App Logic
-├── db.py               # DB Connection / Queries
+├── main.py             # Main App Logic             # DB Connection / Queries
 ├── ui/
 │   ├── login_page.py
 │   ├── signup_page.py
