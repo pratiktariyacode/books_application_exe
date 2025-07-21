@@ -1,22 +1,22 @@
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+from PIL import Image
 import shutil
 import os
 import sqlite3
 import sys
 
 def resource_path(relative_path):
-    """Get absolute path to resource (for dev and for PyInstaller)"""
     try:
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
-# Absolute paths using resource_path
+# Paths
 IMAGE_DIR = resource_path("assets/images")
 PDF_DIR = resource_path("assets/pdf")
+BG_IMAGE_PATH = resource_path("ui/book1.jpg")
 
 def ensure_asset_folders():
     os.makedirs(IMAGE_DIR, exist_ok=True)
@@ -54,18 +54,35 @@ def main():
     ensure_asset_folders()
     create_book_table()
 
-    root = ctk.CTk()
+    root = ctk.CTkToplevel()
     root.title("Add Book")
 
-    ctk.CTkLabel(root, text="Add New Book", font=("Arial", 30, "bold")).pack(pady=20)
+    width, height = 800, 550
+    root.geometry(f"{width}x{height}")
+    center_window(root, width, height)
+    root.resizable(False, False)
 
-    title_entry = ctk.CTkEntry(root, placeholder_text="Enter Book Title", width=400, height=40)
-    title_entry.pack(pady=15)
+    # ✅ Background image
+    if os.path.exists(BG_IMAGE_PATH):
+        bg_image = Image.open(BG_IMAGE_PATH).resize((width, height))
+        bg_ctk_image = ctk.CTkImage(light_image=bg_image, size=(width, height))
+        bg_label = ctk.CTkLabel(root, image=bg_ctk_image, text="")
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    image_label = ctk.CTkLabel(root, text="No image selected")
+    # ✅ Foreground Frame (Card)
+    card = ctk.CTkFrame(root, width=500, height=450, corner_radius=40, fg_color="white")
+    card.place(relx=0.5, rely=0.5, anchor="center")
+
+    # Widgets inside the card
+    ctk.CTkLabel(card, text="Add New Book", font=("Arial", 26, "bold"), text_color="black").pack(pady=(20, 15))
+
+    title_entry = ctk.CTkEntry(card, placeholder_text="Enter Book Title", width=400, height=40)
+    title_entry.pack(pady=10)
+
+    image_label = ctk.CTkLabel(card, text="No image selected", text_color="gray")
     image_label.pack()
 
-    pdf_label = ctk.CTkLabel(root, text="No PDF selected")
+    pdf_label = ctk.CTkLabel(card, text="No PDF selected", text_color="gray")
     pdf_label.pack()
 
     image_path = ""
@@ -102,12 +119,13 @@ def main():
         image_label.configure(text="No image selected")
         pdf_label.configure(text="No PDF selected")
 
-    ctk.CTkButton(root, text="Upload Cover Image", command=browse_image).pack(pady=5)
-    ctk.CTkButton(root, text="Upload PDF", command=browse_pdf).pack(pady=5)
-    ctk.CTkButton(root, text="Add Book", command=add_book).pack(pady=20)
+    ctk.CTkButton(card, text="Upload Cover Image", command=browse_image).pack(pady=5)
+    ctk.CTkButton(card, text="Upload PDF", command=browse_pdf).pack(pady=5)
+    ctk.CTkButton(card, text="Add Book", command=add_book).pack(pady=(20, 10))
 
-    center_window(root, 700, 500)
-    root.mainloop()
+    return root  # ✅ So it can be used from dashboard
 
+# Only run mainloop if script is standalone
 if __name__ == "__main__":
-    main()
+    window = main()
+    window.mainloop()

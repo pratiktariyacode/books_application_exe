@@ -5,9 +5,9 @@ import os
 import shutil
 import webbrowser
 import sys
+from PIL import Image
 
 def resource_path(relative_path):
-    """Get absolute path to resource, works for PyInstaller and dev"""
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -15,12 +15,13 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 DB_PATH = resource_path("users.db")
+BG_IMAGE_PATH = resource_path("ui/book1.jpg")
 
 def fetch_books():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id, title, pdf_path FROM books")
+        cursor.execute("SELECT id, title, pdf_path, image_path FROM books")  # ✅ FIXED
         books = cursor.fetchall()
         conn.close()
         return books
@@ -46,26 +47,58 @@ def center_window(window, width, height):
     window.geometry(f"{width}x{height}+{x}+{y}")
 
 def main():
-    root = ctk.CTk()
+    root = ctk.CTkToplevel()
     root.title("View Books")
+    width, height = 1000, 700
+    center_window(root, width, height)
+    root.resizable(False, False)
 
-    ctk.CTkLabel(root, text="Available Books", font=("Arial", 25, "bold")).pack(pady=20)
+    # ✅ Background Image
+    if os.path.exists(BG_IMAGE_PATH):
+        bg_image = Image.open(BG_IMAGE_PATH).resize((width, height))
+        bg_ctk = ctk.CTkImage(light_image=bg_image, size=(width, height))
+        bg_label = ctk.CTkLabel(root, image=bg_ctk, text="")
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    book_frame = ctk.CTkScrollableFrame(root, width=600, height=400)
+    # ✅ Foreground Container Frame
+    container = ctk.CTkFrame(root, width=960, height=650, fg_color="white", corner_radius=20)
+    container.place(relx=0.5, rely=0.5, anchor="center")
+
+    # ✅ Title
+    ctk.CTkLabel(container, text="Available Books", font=("Arial", 25, "bold"), text_color="black").pack(pady=(20, 5))
+
+    # ✅ Search and Refresh Row
+    top_row = ctk.CTkFrame(container, fg_color="transparent")
+    top_row.pack(pady=5)
+
+    search_var = ctk.StringVar()
+    search_entry = ctk.CTkEntry(top_row, placeholder_text="Search by title...", textvariable=search_var, width=300,height=30,text_color="white" )
+    search_entry.pack(side="left", padx=5)
+
+    def search_books():
+        query = search_var.get().lower()
+        refresh_books(query)
+
+    ctk.CTkButton(top_row, text="Search", command=search_books).pack(side="left", padx=5)
+    ctk.CTkButton(top_row, text="Refresh", command=lambda: refresh_books()).pack(side="left", padx=5)
+
+    # ✅ Scrollable Book Frame
+    book_frame = ctk.CTkScrollableFrame(container, width=920, height=500, fg_color="transparent")
     book_frame.pack(pady=10)
 
-    def refresh_books():
+    def refresh_books(query=None):
         for widget in book_frame.winfo_children():
             widget.destroy()
-        show_books()
+        show_books(query)
 
-    def show_books():
+    def show_books(search_term=None):
         books = fetch_books()
-
+        if search_term:
+            books = [b for b in books if search_term in b[1].lower()]
         if not books:
-            ctk.CTkLabel(book_frame, text="No books found.", font=("Arial", 18)).pack(pady=20)
+            ctk.CTkLabel(book_frame, text="No books found.", font=("Arial", 18), text_color="black").pack(pady=20)
         else:
-            for book_id, title, pdf_path in books:
+            for book_id, title, pdf_path, image_path in books:
                 def open_pdf(p=pdf_path):
                     if os.path.isfile(p):
                         try:
@@ -99,17 +132,28 @@ def main():
                         except Exception as e:
                             messagebox.showerror("Delete Error", f"Could not delete:\n{e}")
 
-                row = ctk.CTkFrame(book_frame)
+                row = ctk.CTkFrame(book_frame, fg_color="transparent")
                 row.pack(fill="x", pady=5, padx=10)
 
-                ctk.CTkLabel(row, text=title, font=("Arial", 16), anchor="w").pack(side="left", padx=10, fill="x", expand=True)
+                if image_path and os.path.isfile(image_path):
+                    try:
+                        img = Image.open(image_path).resize((120, 80))
+                        book_img = ctk.CTkImage(light_image=img, size=(120, 80))
+                        ctk.CTkLabel(row, image=book_img, text="").pack(side="left", padx=10)
+                    except Exception as e:
+                        print(f"Image load error: {e}")
+                else:
+                    ctk.CTkLabel(row, text="No Image", width=120, height=80, text_color="gray").pack(side="left", padx=10)
+
+                ctk.CTkLabel(row, text=title, font=("Arial", 16), anchor="w", text_color="black").pack(side="left", padx=10, fill="x", expand=True)
                 ctk.CTkButton(row, text="Open PDF", command=open_pdf, width=90).pack(side="right", padx=3)
                 ctk.CTkButton(row, text="Download", command=download_pdf, width=90).pack(side="right", padx=3)
                 ctk.CTkButton(row, text="Delete", command=delete_pdf, fg_color="red", width=90).pack(side="right", padx=3)
 
     show_books()
-    center_window(root, 700, 600)
-    root.mainloop()
+    root.iconbitmap("ui/icon.ico")
+    return root
 
 if __name__ == "__main__":
-    main()
+    win = main()
+    win.mainloop()
