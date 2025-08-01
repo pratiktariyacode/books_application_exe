@@ -7,6 +7,7 @@ import webbrowser
 import sys
 from PIL import Image
 
+# ✅ PyInstaller-compatible path resolver
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -14,14 +15,16 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
+# ✅ Paths
 DB_PATH = resource_path("users.db")
 BG_IMAGE_PATH = resource_path("ui/book1.jpg")
+ICON_PATH = resource_path("ui/icon.ico")
 
 def fetch_books():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id, title, pdf_path, image_path FROM books")  # ✅ FIXED
+        cursor.execute("SELECT id, title, pdf_path, image_path FROM books")
         books = cursor.fetchall()
         conn.close()
         return books
@@ -53,6 +56,10 @@ def main():
     center_window(root, width, height)
     root.resizable(False, False)
 
+    # ✅ Set icon
+    if os.path.exists(ICON_PATH):
+        root.iconbitmap(ICON_PATH)
+
     # ✅ Background Image
     if os.path.exists(BG_IMAGE_PATH):
         bg_image = Image.open(BG_IMAGE_PATH).resize((width, height))
@@ -60,19 +67,17 @@ def main():
         bg_label = ctk.CTkLabel(root, image=bg_ctk, text="")
         bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    # ✅ Foreground Container Frame
     container = ctk.CTkFrame(root, width=960, height=650, fg_color="white", corner_radius=20)
     container.place(relx=0.5, rely=0.5, anchor="center")
 
-    # ✅ Title
     ctk.CTkLabel(container, text="Available Books", font=("Arial", 25, "bold"), text_color="black").pack(pady=(20, 5))
 
-    # ✅ Search and Refresh Row
     top_row = ctk.CTkFrame(container, fg_color="transparent")
     top_row.pack(pady=5)
 
     search_var = ctk.StringVar()
-    search_entry = ctk.CTkEntry(top_row, placeholder_text="Search by title...", textvariable=search_var, width=300,height=30,text_color="white" )
+    search_entry = ctk.CTkEntry(top_row, placeholder_text="Search by title...", textvariable=search_var,
+                                 width=300, height=30, text_color="white")
     search_entry.pack(side="left", padx=5)
 
     def search_books():
@@ -82,7 +87,6 @@ def main():
     ctk.CTkButton(top_row, text="Search", command=search_books).pack(side="left", padx=5)
     ctk.CTkButton(top_row, text="Refresh", command=lambda: refresh_books()).pack(side="left", padx=5)
 
-    # ✅ Scrollable Book Frame
     book_frame = ctk.CTkScrollableFrame(container, width=920, height=500, fg_color="transparent")
     book_frame.pack(pady=10)
 
@@ -110,7 +114,8 @@ def main():
 
                 def download_pdf(p=pdf_path):
                     if os.path.isfile(p):
-                        save_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+                        save_path = filedialog.asksaveasfilename(defaultextension=".pdf",
+                                                                 filetypes=[("PDF files", "*.pdf")])
                         if save_path:
                             try:
                                 shutil.copy(p, save_path)
@@ -151,7 +156,6 @@ def main():
                 ctk.CTkButton(row, text="Delete", command=delete_pdf, fg_color="red", width=90).pack(side="right", padx=3)
 
     show_books()
-    root.iconbitmap("ui/icon.ico")
     return root
 
 if __name__ == "__main__":

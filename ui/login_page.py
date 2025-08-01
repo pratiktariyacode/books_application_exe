@@ -4,10 +4,16 @@ from PIL import Image
 import sqlite3
 import os
 import re
-from ui import signup_page
-from ui import user_dashboard
-from ui import admin_panel
+import sys
+from ui import signup_page, user_dashboard, admin_panel
 
+# ✅ For PyInstaller: handle correct path for images/db/icons
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # When bundled by PyInstaller
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def center_window(window, width, height):
     screen_width = window.winfo_screenwidth()
@@ -16,20 +22,18 @@ def center_window(window, width, height):
     y = int((screen_height / 2) - (height / 2))
     window.geometry(f"{width}x{height}+{x}+{y}")
 
-
 def open_signup():
     root.destroy()
     signup_page.main()
 
-
 def login_user(email, password):
-    conn = sqlite3.connect("users.db")
+    db_path = resource_path("users.db")
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
     user = cursor.fetchone()
     conn.close()
     return user
-
 
 def main():
     global root
@@ -39,8 +43,8 @@ def main():
     center_window(root, width, height)
     root.configure(fg_color="white")
 
-    # ✅ Load background image
-    image_path = os.path.join("ui/book5.png")  # ✅ make sure this path is correct
+    # ✅ Background image path fix
+    image_path = resource_path("ui/book5.png")
     if os.path.exists(image_path):
         bg_image = Image.open(image_path).resize((width, height))
         bg_photo = ctk.CTkImage(light_image=bg_image, size=(width, height))
@@ -49,24 +53,20 @@ def main():
         bg_label = ctk.CTkLabel(root, image=bg_photo, text="")
         bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    # ✅ Card Frame (Login Form Container)
+    # ✅ Login Card
     card_frame = ctk.CTkFrame(root, width=420, height=430, corner_radius=40, fg_color="black")
     card_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    # ✅ Title
     ctk.CTkLabel(card_frame, text="Login", text_color="white", font=("Arial", 32, "bold")).place(relx=0.5, rely=0.1, anchor="center")
-
-    # ✅ Email Label and Entry
     ctk.CTkLabel(card_frame, text="Email:", text_color="white", font=("Arial", 16)).place(relx=0.15, rely=0.25, anchor="w")
+
     email_entry = ctk.CTkEntry(card_frame, placeholder_text="Enter your email", width=250, height=40)
     email_entry.place(relx=0.5, rely=0.35, anchor="center")
 
-    # ✅ Password Label and Entry
     ctk.CTkLabel(card_frame, text="Password:", text_color="white", font=("Arial", 16)).place(relx=0.15, rely=0.47, anchor="w")
     password_entry = ctk.CTkEntry(card_frame, placeholder_text="Enter your password", show="*", width=250, height=40)
     password_entry.place(relx=0.5, rely=0.57, anchor="center")
 
-    # ✅ Login Handler
     def handle_login():
         email = email_entry.get()
         password = password_entry.get()
@@ -75,8 +75,7 @@ def main():
             messagebox.showerror("Error", "Please enter all fields")
             return
 
-        email_pattern = r"^[\w\.-]+@[\w\.-]+\.\w{2,4}$"
-        if not re.match(email_pattern, email):
+        if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w{2,4}$", email):
             messagebox.showerror("Error", "Please enter a valid email address")
             return
 
@@ -94,17 +93,19 @@ def main():
         else:
             messagebox.showerror("Error", "Invalid email or password")
 
-    # ✅ Buttons
     login_button = ctk.CTkButton(card_frame, text="Login", width=200, height=35, command=handle_login)
     login_button.place(relx=0.5, rely=0.72, anchor="center")
 
     signup_button = ctk.CTkButton(card_frame, text="Create New Account", command=open_signup, width=200, height=35)
     signup_button.place(relx=0.5, rely=0.84, anchor="center")
 
+    # ✅ Icon fix with resource path
+    icon_path = resource_path("ui/icon.ico")
+    if os.path.exists(icon_path):
+        root.iconbitmap(icon_path)
+
     root.maxsize(1000, 700)
-    root.iconbitmap("ui/icon.ico")
     root.mainloop()
 
-
 if __name__ == '__main__':
-    main()  
+    main()

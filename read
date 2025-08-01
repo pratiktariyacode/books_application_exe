@@ -1,10 +1,12 @@
 book_pdf_store/
 │
 ├── assets/
-│   └── pdf/            # PDF files saved here
-│   └── images/         # Book images saved here
+│   └── pdf/            
+│   └── images/         
 │
-├── main.py             # Main App Logic             # DB Connection / Queries
+├── main.py      
+    bg.png 
+    users.db      
 ├── ui/
 │   ├── login_page.py
 │   ├── signup_page.py
@@ -12,4 +14,37 @@ book_pdf_store/
 │   ├── add_book_page.py
 │   ├── admin_panel.py
 │   └── view_book.py
+        book1.jpg
+        book3.webp
+        book5.png
+        icon.ico
 └── README.md
+''
+
+
+
+
+
+dar--l        01-08-2025     10:39                assets
+dar--l        01-08-2025     10:39                ui
+-a---l        01-08-2025     10:39        1198210 bg.png
+-a---l        01-08-2025     10:39            109 main.py
+-a---l        01-08-2025     10:39            778 main.spec
+-a---l        01-08-2025     10:39            476 read
+-a---l        01-08-2025     10:39             52 README.md
+-a---l        01-08-2025     10:39          20480 users.db
+
+
+
+dar--l        01-08-2025     10:39                __pycache__
+-a---l        01-08-2025     10:39           4584 add_book_page.py
+-a---l        01-08-2025     10:39           2283 admin_panel.py
+-a---l        01-08-2025     10:39         134079 book1.jpg
+-a---l        01-08-2025     10:39         135578 book3.webp
+-a----        01-08-2025     10:39         995603 book5.png
+-a---l        01-08-2025     10:39           4286 icon.ico
+-a---l        01-08-2025     10:39           3997 login_page.py
+-a---l        01-08-2025     10:39           4620 signup_page.py
+-a---l        01-08-2025     10:39           3931 user_dashboard.py
+-a---l        01-08-2025     10:39           6892 view_book.py
+-a---l        01-08-2025     10:39              0 __init__.py

@@ -1,7 +1,18 @@
 import customtkinter as ctk
 import sqlite3
 from tkinter import messagebox
+import os
+import sys
 
+# ✅ Resource path for PyInstaller compatibility
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+# ✅ Centering the window
 def center_window(window, width, height):
     screen_width = window.winfo_screenwidth()
     screen_height = window.winfo_screenheight()
@@ -9,16 +20,18 @@ def center_window(window, width, height):
     y = int((screen_height / 2) - (height / 2))
     window.geometry(f"{width}x{height}+{x}+{y}")
 
+# ✅ Get all users from database
 def get_all_users():
-    conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect(resource_path("users.db"))
     cursor = conn.cursor()
     cursor.execute("SELECT id, username, email FROM users")
     users = cursor.fetchall()
     conn.close()
     return users
 
+# ✅ Delete a user
 def delete_user(user_id, refresh_callback):
-    conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect(resource_path("users.db"))
     cursor = conn.cursor()
     cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
     conn.commit()
@@ -26,6 +39,7 @@ def delete_user(user_id, refresh_callback):
     messagebox.showinfo("Deleted", f"User with ID {user_id} has been deleted.")
     refresh_callback()
 
+# ✅ Main function
 def main():
     global root
     root = ctk.CTk()
@@ -62,8 +76,13 @@ def main():
     load_users()
 
     center_window(root, 900, 600)
-    root.mainloop()
 
+    # ✅ Optional: Set icon if needed
+    icon_path = resource_path("ui/icon.ico")
+    if os.path.exists(icon_path):
+        root.iconbitmap(icon_path)
+
+    root.mainloop()
 
 if __name__ == '__main__':
     main()

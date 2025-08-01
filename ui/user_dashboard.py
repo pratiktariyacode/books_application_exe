@@ -1,11 +1,10 @@
 import customtkinter as ctk
-from ui import add_book_page
-from ui import view_book
-from ui import login_page
+from ui import add_book_page, view_book, login_page
 from PIL import Image
 import os
 import sys
 
+# ✅ PyInstaller-compatible path fetcher
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -16,6 +15,7 @@ def resource_path(relative_path):
 # ✅ Image paths
 BG_IMAGE_PATH = resource_path("ui/book3.webp")
 RIGHT_IMAGE_PATH = resource_path("ui/book_icon.png")
+ICON_PATH = resource_path("ui/icon.ico")
 
 def open_view_book_page():
     if hasattr(open_view_book_page, "window") and open_view_book_page.window.winfo_exists():
@@ -34,13 +34,11 @@ def logout_fun():
     root.destroy()
     login_page.main()
 
-# ✅ Prevent duplicate Add Book windows
 def open_add_book_page():
     if hasattr(open_add_book_page, "window") and open_add_book_page.window.winfo_exists():
         open_add_book_page.window.focus()
         return
     open_add_book_page.window = add_book_page.main()
-
 
 def main(user_email=None):
     global root
@@ -68,7 +66,6 @@ def main(user_email=None):
     card_frame = ctk.CTkFrame(border_frame, width=420, height=440, corner_radius=50, fg_color="white")
     card_frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    # ✅ Welcome text
     ctk.CTkLabel(
         card_frame,
         text=f"Welcome, {user_email or 'User'}",
@@ -76,7 +73,6 @@ def main(user_email=None):
         text_color="black"
     ).pack(pady=(30, 20))
 
-    # ✅ Add Book Button (no duplicate windows)
     ctk.CTkButton(
         card_frame,
         text="➕ Add Book",
@@ -87,7 +83,6 @@ def main(user_email=None):
         command=open_add_book_page
     ).pack(pady=10)
 
-    # ✅ View Book Button (no duplicate windows)
     ctk.CTkButton(
         card_frame,
         text="📚 View My Books",
@@ -98,7 +93,6 @@ def main(user_email=None):
         command=open_view_book_page
     ).pack(pady=10)
 
-    # ✅ Logout Button
     ctk.CTkButton(
         card_frame,
         text="🚪 Logout",
@@ -118,7 +112,11 @@ def main(user_email=None):
         side_ctk_image = ctk.CTkImage(light_image=side_image, size=(350, 350))
         image_label = ctk.CTkLabel(root, image=side_ctk_image, text="")
         image_label.place(relx=0.9, rely=0.5, anchor="center")
-    root.iconbitmap("ui/icon.ico")
+
+    # ✅ App icon
+    if os.path.exists(ICON_PATH):
+        root.iconbitmap(ICON_PATH)
+
     root.mainloop()
 
 if __name__ == '__main__':
